@@ -149,6 +149,12 @@ module I18nRouting
     # end
     #
     def localized(locales = I18n.available_locales, opts = {})
+      #In several places, this gem sets I18n.locale to be each of the I18n.available_locales.
+      #As a result, the final I18n.locale= call can end up setting the locale to be something
+      #unexpected - for example, I set I18n.locale in an initializer based on a site setting,
+      #and that gets overwritten dependingn on the order of the available_locales array!
+      original_locale = I18n.locale
+
       # Add if not added Rails.root/config/locales/*.yml in the I18n.load_path
       if !@i18n_routing_path_set and defined?(Rails) and Rails.respond_to?(:root) and Rails.root
         I18n.load_path = (I18n.load_path << Dir[Rails.root.join('config', 'locales', '*.yml')]).flatten.uniq
@@ -161,6 +167,7 @@ module I18nRouting
       yield
     ensure
       @locales = old_value
+      I18n.locale = original_locale
     end
     
     # Create a branch for create routes in the specified locale

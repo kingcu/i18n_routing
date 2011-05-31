@@ -12,17 +12,17 @@ module I18nRouting
     if option
       default = "{option}Noi18nRoutingTranslation"
       t = I18n.t(option, :scope => "routing.#{name}.#{type}", :default => default)
-      return (t == default ? nil : t)
+      return (t == default ? nil : CGI.escape(t))
     else
       default = "{name}Noi18nRoutingTranslation"
 
       # Try to get the translation in routes namescope first      
       t = I18n.t(:as, :scope => "routing.#{name}", :default => default)
 
-      return t if t and t != default
+      return CGI.escape(t) if t and t != default
 
       t = I18n.t(name.to_s, :scope => type, :default => default)
-      return (t == default ? nil : t)
+      return (t == default ? nil : CGI.escape(t))
     end
   end
 
@@ -44,7 +44,7 @@ module I18nRouting
       # Get default path_names in path_names scope if no path_names found
       n ||= I18n.t(pn, :scope => :path_names, :default => name.to_s)
 
-      h[pn] = n if n and n != name.to_s
+      h[pn] = CGI.escape(n) if n and n != name.to_s
     end
 
     return h

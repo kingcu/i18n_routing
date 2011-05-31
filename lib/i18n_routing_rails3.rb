@@ -293,6 +293,7 @@ module I18nRouting
     def initialize(locale, set, scope, path, options)
       super(set, scope, path.clone, options ? options.clone : nil)
 
+      original_locale = I18n.locale
       # try to get translated path :
       I18n.locale = locale
       ts = @path.gsub(/^\//, '')
@@ -316,6 +317,7 @@ module I18nRouting
       else
         @localized_path = nil
       end
+      I18n.locale = original_locale
     end
 
     # Return true if this route is localizable

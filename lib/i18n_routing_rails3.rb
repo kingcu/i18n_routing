@@ -20,6 +20,9 @@ module I18nRouting
     
     # Localize a resources or a resource
     def localized_resources(type = :resources, *resources, &block)
+      #store away for restoration after method
+      original_locale = I18n.locale
+
       localizable_route = nil
 
       if @locales
@@ -83,6 +86,7 @@ module I18nRouting
           end
         end
       end
+      I18n.locale = original_locale
       return localizable_route
     end
 
@@ -149,12 +153,6 @@ module I18nRouting
     # end
     #
     def localized(locales = I18n.available_locales, opts = {})
-      #In several places, this gem sets I18n.locale to be each of the I18n.available_locales.
-      #As a result, the final I18n.locale= call can end up setting the locale to be something
-      #unexpected - for example, I set I18n.locale in an initializer based on a site setting,
-      #and that gets overwritten dependingn on the order of the available_locales array!
-      original_locale = I18n.locale
-
       # Add if not added Rails.root/config/locales/*.yml in the I18n.load_path
       if !@i18n_routing_path_set and defined?(Rails) and Rails.respond_to?(:root) and Rails.root
         I18n.load_path = (I18n.load_path << Dir[Rails.root.join('config', 'locales', '*.yml')]).flatten.uniq
@@ -167,7 +165,6 @@ module I18nRouting
       yield
     ensure
       @locales = old_value
-      I18n.locale = original_locale
     end
     
     # Create a branch for create routes in the specified locale
@@ -293,7 +290,12 @@ module I18nRouting
     def initialize(locale, set, scope, path, options)
       super(set, scope, path.clone, options ? options.clone : nil)
 
+      #In several places, this gem sets I18n.locale to be each of the I18n.available_locales.
+      #As a result, the final I18n.locale= call can end up setting the locale to be something
+      #unexpected - for example, I set I18n.locale in an initializer based on a site setting,
+      #and that gets overwritten dependingn on the order of the available_locales array!
       original_locale = I18n.locale
+
       # try to get translated path :
       I18n.locale = locale
       ts = @path.gsub(/^\//, '')
@@ -317,6 +319,7 @@ module I18nRouting
       else
         @localized_path = nil
       end
+    ensure
       I18n.locale = original_locale
     end
 
